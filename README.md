@@ -5,3 +5,5 @@
 # Docker compose
 ### docker compose build
 ### docker compose up -d
+
+# GIT task try 1
