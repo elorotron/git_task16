@@ -1,0 +1,27 @@
+FROM ubuntu:22.04
+
+ENV TZ="Europe/Minsk"
+ENV DEBIAN_FRONTEND=noninteractive
+#apache2 php libapache2-mod-php
+RUN apt-get update &&\
+    apt-get install -y nginx-extras systemctl &&\
+    apt-get clean
+
+VOLUME /volume
+
+COPY ./files/html /var/www/html
+COPY ./files/nginx/* /etc/nginx/sites-available
+#COPY ./files/apache/* /etc/apache2
+COPY ./files/certs/* /etc/ssl/certs/
+COPY ./files/log_script/logs.sh /log_script/
+COPY ./files/systemd_daemon/logs.service /etc/systemd/system/
+COPY ./files/log_script/entrypoint.sh /entrypoint.sh
+
+RUN ln -s /etc/nginx/sites-available/reverse-proxy /etc/nginx/sites-enabled/ &&\
+    ln -s /etc/nginx/sites-available/susel.ddns.net /etc/nginx/sites-enabled/ &&\
+    ln -s /etc/nginx/sites-available/susel.ddns.net2 /etc/nginx/sites-enabled/ &&\
+    chmod u+x /log_script/logs.sh &&\
+    chmod u+x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE 80
+EXPOSE 443

@@ -1,0 +1,11 @@
+[Unit]
+Description=My Custom Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/log_script/logs.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

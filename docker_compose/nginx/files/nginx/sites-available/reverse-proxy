@@ -1,0 +1,88 @@
+log_format upstreamlog '$server_name to: $upstream_addr [$request] '
+  'upstream_response_time $upstream_response_time '
+  'msec $msec request_time $request_time';
+
+
+upstream notes {
+ server localhost:8080;
+ server localhost:8085;
+}
+
+#=========================================================
+server {
+    server_name susel.ddns.net;
+    access_log /var/log/nginx/access.log upstreamlog;
+
+    location / {
+        proxy_pass http://notes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /secondpage/ {
+        proxy_pass http://notes;
+    }
+
+    location /music {
+        proxy_pass http://notes;
+    }
+
+
+    location /info.php {
+         #proxy_pass http://apache:8080/;
+
+    }
+
+#---------Regular expression-----------
+
+    location ~ ^/file/.*\.(jpg|png)$ {
+	proxy_pass http://notes;
+    }
+
+#-------------------------------------
+    #YAML FILE
+    location /files/ansible.yaml {
+        proxy_pass http://notes;
+    }
+
+#----------------CPU usage-------------
+
+    location /stat {
+        proxy_pass http://notes;
+	#add_header Refresh "5";
+    }
+
+#-----------Errors-----------------
+
+    location /error {
+	proxy_pass http://notes;
+	
+    }
+
+#==============SSL and redirect=========================================================================
+
+    listen 443 ssl;
+    ssl_certificate /etc/ssl/certs/fullchain1.pem;
+    ssl_certificate_key /etc/ssl/certs/privkey1.pem;
+
+}
+
+
+
+
+server {
+    if ($host = susel.ddns.net) {
+        return 301 https://$host$request_uri;
+    }
+
+
+    listen 80;
+    server_name susel.ddns.net;
+    return 404;
+
+
+}
+
+#===================================================================================
